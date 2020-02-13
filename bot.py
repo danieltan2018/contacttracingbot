@@ -98,6 +98,7 @@ def new(update, context):
     today = date.today().strftime('%d %b %Y')
     global checkin
     checkin[today] = {}
+    checkout[today] = {}
     with open('checkin.json', 'w') as checkinfile:
         json.dump(checkin, checkinfile)
     with open('tracing.txt', 'a+') as tracing:
