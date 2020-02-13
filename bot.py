@@ -11,6 +11,12 @@ from datetime import datetime, date
 from secrets import bottoken, port, admins, channel
 import json
 
+import pickle
+import os.path
+from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+
 ip = get('https://api.ipify.org').text
 try:
     certfile = open("cert.pem")
@@ -167,19 +173,22 @@ def callbackquery(update, context):
         now = datetime.now().strftime('%H:%M:%S')
         today = date.today().strftime('%d %b %Y')
         name = users[user_id]['name']
+        v1 = name
+        v2 = users[user_id]['phone']
+        v3 = now
         if name in checkin[today]:
             context.bot.answer_callback_query(
                 query.id, text='Error: you are already checked in.', show_alert=True)
             with open('tracing.txt', 'a+') as tracing:
-                tracing.write(users[user_id]['name'] + ',' +
-                              users[user_id]['phone'] + ',' + now + ',Duplicate' + '\n')
+                tracing.write(v1 + ',' + v2 + ',' + v3 + ',Duplicate' + '\n')
+            sheetappend([date, v1, v2, v3, 'Duplicate'])
             return
         checkin[today][name] = now
         with open('checkin.json', 'w') as checkinfile:
             json.dump(checkin, checkinfile)
         with open('tracing.txt', 'a+') as tracing:
-            tracing.write(users[user_id]['name'] + ',' +
-                          users[user_id]['phone'] + ',' + now + '\n')
+            tracing.write(v1 + ',' + v2 + ',' + v3 + '\n')
+        sheetappend([date, v1, v2, v3])
         context.bot.answer_callback_query(
             query.id, text='Welcome, {}!'.format(name), show_alert=True)
         count = str(len(checkin[today]))
@@ -198,6 +207,40 @@ def callbackquery(update, context):
         context.bot.answer_callback_query(
             query.id, url='t.me/lifeyf_bot?start=1')
     return
+
+
+@run_async
+def sheetappend(values):
+    creds = None
+    if os.path.exists('token.pickle'):
+        with open('token.pickle', 'rb') as token:
+            creds = pickle.load(token)
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'credentials.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+        with open('token.pickle', 'wb') as token:
+            pickle.dump(creds, token)
+
+    service = build('sheets', 'v4', credentials=creds)
+
+    spreadsheet_id = '1JBVKfcF_CDZiYVJv5nN10XdLh32VRUiUW4TAvOwni4o'
+    range_ = 'A1'
+    value_input_option = 'RAW'
+    insert_data_option = 'INSERT_ROWS'
+
+    value_range_body = {
+        'values': [values]
+    }
+
+    request = service.spreadsheets().values().append(spreadsheetId=spreadsheet_id, range=range_,
+                                                     valueInputOption=value_input_option, insertDataOption=insert_data_option, body=value_range_body)
+    response = request.execute()
+    return response
 
 
 def main():
