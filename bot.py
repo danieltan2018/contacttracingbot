@@ -101,6 +101,8 @@ def new(update, context):
     checkout[today] = {}
     with open('checkin.json', 'w') as checkinfile:
         json.dump(checkin, checkinfile)
+    with open('checkout.json', 'w') as checkoutfile:
+        json.dump(checkout, checkoutfile)
     with open('tracing.txt', 'a+') as tracing:
         tracing.write('\n' + today + '\n')
     msg = '*YF Contact Tracing* ({})\n\n{}\n\n_0 checked in_\n_0 checked out_'.format(
@@ -195,7 +197,7 @@ def callbackquery(update, context):
             with open('tracing.txt', 'a+') as tracing:
                 tracing.write(v1 + ',' + v2 + ',' + v3 + ',' +
                               v4 + ',Temporary / Duplicate' + '\n')
-            sheetappend([date, v1, v2, v3, v4, 'Temporary / Duplicate'])
+            sheetappend([today, v1, v2, v3, v4, 'Temporary / Duplicate'])
             return
         checkin[today][name] = now
         with open('checkin.json', 'w') as checkinfile:
@@ -203,12 +205,12 @@ def callbackquery(update, context):
         with open('tracing.txt', 'a+') as tracing:
             tracing.write(v1 + ',' + v2 + ',' + v3 +
                           ',' + v4 + ',Temporary' + '\n')
-        sheetappend([date, v1, v2, v3, v4, 'Temporary'])
+        sheetappend([today, v1, v2, v3, v4, 'Temporary'])
         context.bot.answer_callback_query(
             query.id, text='Welcome, {}!'.format(name), show_alert=True)
         countin = str(len(checkin[today]))
         countout = str(len(checkout[today]))
-        msg = '*YF Contact Tracing* ({})\n\n{}\n\n_{} checked in_\n_{} checked out'.format(
+        msg = '*YF Contact Tracing* ({})\n\n{}\n\n_{} checked in_\n_{} checked out_'.format(
             today, declaration, countin, countout)
         keyboard = InlineKeyboardMarkup(
             [[InlineKeyboardButton('CHECK IN', callback_data='checkin')],
@@ -237,7 +239,7 @@ def callbackquery(update, context):
             with open('tracing.txt', 'a+') as tracing:
                 tracing.write(v1 + ',' + v2 + ',' + v3 + ',' +
                               v4 + ',Duplicate' + '\n')
-            sheetappend([date, v1, v2, v3, v4, 'Duplicate'])
+            sheetappend([today, v1, v2, v3, v4, 'Duplicate'])
             return
         checkout[today][name] = now
         with open('checkout.json', 'w') as checkoutfile:
@@ -245,12 +247,12 @@ def callbackquery(update, context):
         with open('tracing.txt', 'a+') as tracing:
             tracing.write(v1 + ',' + v2 + ',' + v3 +
                           ',' + v4 + ',Temporary' + '\n')
-        sheetappend([date, v1, v2, v3, v4, 'Temporary'])
+        sheetappend([today, v1, v2, v3, v4, 'Temporary'])
         context.bot.answer_callback_query(
             query.id, text='Goodbye, {}!'.format(name), show_alert=True)
         countin = str(len(checkin[today]))
         countout = str(len(checkout[today]))
-        msg = '*YF Contact Tracing* ({})\n\n{}\n\n_{} checked in_\n_{} checked out'.format(
+        msg = '*YF Contact Tracing* ({})\n\n{}\n\n_{} checked in_\n_{} checked out_'.format(
             today, declaration, countin, countout)
         keyboard = InlineKeyboardMarkup(
             [[InlineKeyboardButton('CHECK IN', callback_data='checkin')],
@@ -289,7 +291,7 @@ def sheetappend(values):
 
     spreadsheet_id = '1JBVKfcF_CDZiYVJv5nN10XdLh32VRUiUW4TAvOwni4o'
     range_ = 'A1'
-    value_input_option = 'RAW'
+    value_input_option = 'USER_ENTERED'
     insert_data_option = 'INSERT_ROWS'
 
     value_range_body = {
@@ -314,7 +316,7 @@ def main():
 
     loader()
 
-    # updater.start_polling()
+    updater.start_polling()
     updater.start_webhook(listen='0.0.0.0',
                           port=port,
                           url_path=bottoken,
