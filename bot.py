@@ -100,7 +100,9 @@ def new(update, context):
 @run_async
 def start(update, context):
     id = str(update.message.chat_id)
-    if id.startswith('-'):
+    if id in users or id.startswith('-'):
+        update.message.reply_text(
+            '_You are already registered_', parse_mode=telegram.ParseMode.MARKDOWN)
         return
     msg = 'First, I need your contact number. Please press the *REGISTER* button below.'
     contact_keyboard = telegram.KeyboardButton(
@@ -138,7 +140,7 @@ def fullname(update, context):
     global users
     user_id = str(update.effective_user.id)
     message = update.message.text
-    count = message.count('')
+    count = message.count(' ')
     if user_id not in users:
         return
     if count < 1:
