@@ -43,12 +43,12 @@ logger = logging.getLogger(__name__)
 bot = telegram.Bot(token=bottoken)
 
 
-declaration = '''Please click CHECK IN only when instructed to at the YF temperature screening station.
-
-_You declare that you:_
+declaration = '''_You declare that you:_
 a. have not visited China or come into contact with anyone in quarantine/Leave of Absence during last 14 days
 b. do not have a fever (temperature >37.5)
-c. do not have respiratory symptoms (e.g. cough/runny nose/sore throat/difficulty in breathing)'''
+c. do not have respiratory symptoms (e.g. cough/runny nose/sore throat/difficulty in breathing)
+
+Please *DO NOT* click Check In until instructed to so at the YF temperature screening station.'''
 
 
 def adminonly(func):
