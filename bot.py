@@ -84,6 +84,13 @@ def loader():
     except:
         with open('checkin.json', 'w+'):
             checkin = {}
+    global checkout
+    try:
+        with open('checkout.json') as checkoutfile:
+            checkout = json.load(checkoutfile)
+    except:
+        with open('checkout.json', 'w+'):
+            checkout = {}
 
 
 @adminonly
@@ -95,10 +102,11 @@ def new(update, context):
         json.dump(checkin, checkinfile)
     with open('tracing.txt', 'a+') as tracing:
         tracing.write('\n' + today + '\n')
-    msg = '*YF Contact Tracing* ({})\n\n{}\n\n_0 check-ins today_'.format(
+    msg = '*YF Contact Tracing* ({})\n\n{}\n\n_0 checked in_\n_0 checked out_'.format(
         today, declaration)
     keyboard = InlineKeyboardMarkup(
-        [[InlineKeyboardButton('CHECK IN', callback_data='button')]])
+        [[InlineKeyboardButton('CHECK IN', callback_data='checkin')],
+         [InlineKeyboardButton('CHECK OUT', callback_data='checkout')]])
     bot.send_message(chat_id=channel, reply_markup=keyboard, text=msg,
                      parse_mode=telegram.ParseMode.MARKDOWN)
 
@@ -164,38 +172,88 @@ def fullname(update, context):
 def callbackquery(update, context):
     query = update.callback_query
     data = query.data
-    if data != 'button':
-        return
     user_id = str(query.from_user.id)
     global users
-    if user_id in users:
-        global checkin
+    if user_id not in users:
+        context.bot.answer_callback_query(
+            query.id, url='t.me/lifeyf_bot?start=1')
+        return
+    global checkin
+    global checkout
+    if data == 'checkin':
         now = datetime.now().strftime('%H:%M:%S')
         today = date.today().strftime('%d %b %Y')
         name = users[user_id]['name']
         v1 = name
         v2 = users[user_id]['phone']
         v3 = now
+        v4 = ''
         if name in checkin[today]:
             context.bot.answer_callback_query(
                 query.id, text='Error: you are already checked in.', show_alert=True)
             with open('tracing.txt', 'a+') as tracing:
-                tracing.write(v1 + ',' + v2 + ',' + v3 + ',Duplicate' + '\n')
-            sheetappend([date, v1, v2, v3, 'Duplicate'])
+                tracing.write(v1 + ',' + v2 + ',' + v3 + ',' +
+                              v4 + ',Temporary / Duplicate' + '\n')
+            sheetappend([date, v1, v2, v3, v4, 'Temporary / Duplicate'])
             return
         checkin[today][name] = now
         with open('checkin.json', 'w') as checkinfile:
             json.dump(checkin, checkinfile)
         with open('tracing.txt', 'a+') as tracing:
-            tracing.write(v1 + ',' + v2 + ',' + v3 + '\n')
-        sheetappend([date, v1, v2, v3])
+            tracing.write(v1 + ',' + v2 + ',' + v3 +
+                          ',' + v4 + ',Temporary' + '\n')
+        sheetappend([date, v1, v2, v3, v4, 'Temporary'])
         context.bot.answer_callback_query(
             query.id, text='Welcome, {}!'.format(name), show_alert=True)
-        count = str(len(checkin[today]))
-        msg = '*YF Contact Tracing* ({})\n\n{}\n\n_{} check-ins today_'.format(
-            today, declaration, count)
+        countin = str(len(checkin[today]))
+        countout = str(len(checkout[today]))
+        msg = '*YF Contact Tracing* ({})\n\n{}\n\n_{} checked in_\n_{} checked out'.format(
+            today, declaration, countin, countout)
         keyboard = InlineKeyboardMarkup(
-            [[InlineKeyboardButton('CHECK IN', callback_data='button')]])
+            [[InlineKeyboardButton('CHECK IN', callback_data='checkin')],
+             [InlineKeyboardButton('CHECK OUT', callback_data='checkout')]])
+        bot.edit_message_text(
+            chat_id=channel,
+            message_id=query.message.message_id,
+            text=msg,
+            reply_markup=keyboard,
+            parse_mode=telegram.ParseMode.MARKDOWN
+        )
+    elif data == 'checkout':
+        now = datetime.now().strftime('%H:%M:%S')
+        today = date.today().strftime('%d %b %Y')
+        name = users[user_id]['name']
+        if name not in checkin[today]:
+            context.bot.answer_callback_query(
+                query.id, text='Error: you are not checked in.', show_alert=True)
+        v1 = name
+        v2 = users[user_id]['phone']
+        v3 = checkin[today][name]
+        v4 = now
+        if name in checkout[today]:
+            context.bot.answer_callback_query(
+                query.id, text='Error: you are already checked out.', show_alert=True)
+            with open('tracing.txt', 'a+') as tracing:
+                tracing.write(v1 + ',' + v2 + ',' + v3 + ',' +
+                              v4 + ',Duplicate' + '\n')
+            sheetappend([date, v1, v2, v3, v4, 'Duplicate'])
+            return
+        checkout[today][name] = now
+        with open('checkout.json', 'w') as checkoutfile:
+            json.dump(checkout, checkoutfile)
+        with open('tracing.txt', 'a+') as tracing:
+            tracing.write(v1 + ',' + v2 + ',' + v3 +
+                          ',' + v4 + ',Temporary' + '\n')
+        sheetappend([date, v1, v2, v3, v4, 'Temporary'])
+        context.bot.answer_callback_query(
+            query.id, text='Goodbye, {}!'.format(name), show_alert=True)
+        countin = str(len(checkin[today]))
+        countout = str(len(checkout[today]))
+        msg = '*YF Contact Tracing* ({})\n\n{}\n\n_{} checked in_\n_{} checked out'.format(
+            today, declaration, countin, countout)
+        keyboard = InlineKeyboardMarkup(
+            [[InlineKeyboardButton('CHECK IN', callback_data='checkin')],
+             [InlineKeyboardButton('CHECK OUT', callback_data='checkout')]])
         bot.edit_message_text(
             chat_id=channel,
             message_id=query.message.message_id,
