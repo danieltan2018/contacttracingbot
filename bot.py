@@ -54,7 +54,7 @@ a. have not visited China or come into contact with anyone in quarantine/Leave o
 b. do not have a fever (temperature >37.5)
 c. do not have respiratory symptoms (e.g. cough/runny nose/sore throat/difficulty in breathing)
 
-Please *DO NOT* click Check In until instructed to so at the YF temperature screening station.'''
+Please *DO NOT* click Check In until instructed to do so at the YF temperature screening station.'''
 
 
 def adminonly(func):
