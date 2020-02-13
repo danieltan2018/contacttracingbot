@@ -247,7 +247,7 @@ def callbackquery(update, context):
         with open('tracing.txt', 'a+') as tracing:
             tracing.write(v1 + ',' + v2 + ',' + v3 +
                           ',' + v4 + '\n')
-        sheetappend([today, v1, v2, v3, v4'])
+        sheetappend([today, v1, v2, v3, v4])
         context.bot.answer_callback_query(
             query.id, text='Goodbye, {}!'.format(name), show_alert=True)
         countin = str(len(checkin[today]))
