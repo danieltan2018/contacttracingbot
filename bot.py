@@ -229,6 +229,7 @@ def callbackquery(update, context):
         if name not in checkin[today]:
             context.bot.answer_callback_query(
                 query.id, text='Error: you are not checked in.', show_alert=True)
+            return
         v1 = name
         v2 = users[user_id]['phone']
         v3 = checkin[today][name]
