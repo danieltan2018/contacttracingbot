@@ -125,7 +125,7 @@ def start(update, context):
     contact_keyboard = telegram.KeyboardButton(
         text="REGISTER", request_contact=True)
     keyboard = telegram.ReplyKeyboardMarkup([[contact_keyboard]])
-    bot.send_message(chat_id=channel, reply_markup=keyboard,
+    bot.send_message(chat_id=id, reply_markup=keyboard,
                      text=msg, parse_mode=telegram.ParseMode.MARKDOWN)
 
 
@@ -316,7 +316,7 @@ def main():
 
     loader()
 
-    updater.start_polling()
+    # updater.start_polling()
     updater.start_webhook(listen='0.0.0.0',
                           port=port,
                           url_path=bottoken,
