@@ -162,9 +162,7 @@ def fullname(update, context):
         return
     try:
         isset = users[user_id]['name']
-        isset = isset.count(' ')
-        if count > 1:
-            update.message.reply_text("Not Allowed")
+        update.message.reply_text("Not Allowed")
     except:
         if count < 1:
             update.message.reply_text(
