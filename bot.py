@@ -160,16 +160,23 @@ def fullname(update, context):
     count = message.count(' ')
     if user_id not in users:
         return
-    if count < 1:
-        update.message.reply_text("Is that your full name? Please try again.")
-    else:
-        users[user_id]['name'] = message
-        with open('users.json', 'w') as userfile:
-            json.dump(users, userfile)
-        update.message.reply_text(
-            "Thank you. Your details are saved and will be used for future check-ins.")
-        update.message.reply_text(
-            "Please return to @YFAnnouncements to complete your check-in.")
+    try:
+        isset = users[user_id]['name']
+        isset = isset.count(' ')
+        if count > 1:
+            update.message.reply_text("Not Allowed")
+    except:
+        if count < 1:
+            update.message.reply_text(
+                "Is that your full name? Please try again.")
+        else:
+            users[user_id]['name'] = message
+            with open('users.json', 'w') as userfile:
+                json.dump(users, userfile)
+            update.message.reply_text(
+                "Thank you. Your details are saved and will be used for future check-ins.")
+            update.message.reply_text(
+                "Please return to @YFAnnouncements to complete your check-in.")
 
 
 def callbackquery(update, context):
