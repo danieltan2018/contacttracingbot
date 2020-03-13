@@ -162,7 +162,8 @@ def fullname(update, context):
         return
     try:
         isset = users[user_id]['name']
-        update.message.reply_text("Not Allowed")
+        update.message.reply_text(
+            '`Not Allowed`', parse_mode=telegram.ParseMode.MARKDOWN)
     except:
         if count < 1:
             update.message.reply_text(
