@@ -156,7 +156,7 @@ def contact(update, context):
 def fullname(update, context):
     global users
     user_id = str(update.effective_user.id)
-    message = update.message.text
+    message = update.message.text.strip()
     count = message.count(' ')
     if user_id not in users:
         return
@@ -203,7 +203,6 @@ def callbackquery(update, context):
             with open('tracing.txt', 'a+') as tracing:
                 tracing.write(v1 + ',' + v2 + ',' + v3 + ',' +
                               v4 + ',Temporary / Duplicate' + '\n')
-            sheetappend([today, v1, v2, v3, v4, 'Temporary / Duplicate'])
             return
         checkin[today][name] = now
         with open('checkin.json', 'w') as checkinfile:
@@ -246,7 +245,6 @@ def callbackquery(update, context):
             with open('tracing.txt', 'a+') as tracing:
                 tracing.write(v1 + ',' + v2 + ',' + v3 + ',' +
                               v4 + ',Duplicate' + '\n')
-            sheetappend([today, v1, v2, v3, v4, 'Duplicate'])
             return
         checkout[today][name] = now
         with open('checkout.json', 'w') as checkoutfile:
